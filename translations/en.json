@@ -1,0 +1,20 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Device is already configured",
+            "not_id": "Entered string does not correspond to MAC address or UUID"
+        },
+        "error": {
+            "unknown": "Unexpected error"
+        },
+        "step": {
+            "user": {
+                "title": "Fill in tracker device data",
+                "data": {
+                    "mac": "Device MAC address (e.g. 12:34:56:78:90:ab) or beacon UUID (e.g. abcdef12-3456-7890-abcd-ef1234567890)",
+                    "name": "Friendly name for device"
+                }
+            }
+        }
+    }
+}

@@ -17,9 +17,7 @@ Requires ESP32 tracking nodes installation: see https://github.com/formatBCE/ESP
 # Installation:
 
   1. HACS: 
-   - Add this repository to HACS in Integrations -> (menu) -> Custom repositories:
-   -- Repository: URL of this repository
-   -- Category: Integration
+   - Add this repository to HACS in Integrations -> (menu) -> Custom repositories (Repository: URL of this repository, Category: Integration)
    - Install integration from Integration page.
   
   2. Manual: 

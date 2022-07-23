@@ -17,10 +17,10 @@ Requires ESP32 tracking nodes installation: see https://github.com/formatBCE/ESP
 # Installation:
 
   1. HACS: 
-  Add this repository to HACS in Integrations -> (menu) -> Custom repositories:
-   - Repository: URL of this repository
-   - Category: Integration
-  Install integration from Integration page.
+   - Add this repository to HACS in Integrations -> (menu) -> Custom repositories:
+   -- Repository: URL of this repository
+   -- Category: Integration
+   - Install integration from Integration page.
   
   2. Manual: 
   Copy the format_ble_tracker folder and all of its contents into your Home Assistant's custom_components folder. This is often located inside of your /config folder. If you are running Hass.io, use SAMBA to copy the folder over. If you are running Home Assistant Supervised, the custom_components folder might be located at /usr/share/hassio/homeassistant. It is possible that your custom_components folder does not exist. If that is the case, create the folder in the proper location, and then copy the format_ble_tracker folder and all of its contents inside the newly created custom_components folder. 

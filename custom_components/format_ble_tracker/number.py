@@ -40,13 +40,17 @@ class BleDataExpirationNumber(BeaconDeviceEntity, RestoreNumber, NumberEntity):
         """Entity has been added to hass, restoring state"""
         restored = await self.async_get_last_number_data()
         native_value = 2 if restored is None else restored.native_value
-        self._attr_native_value = native_value
-        await self.coordinator.on_expiration_time_changed(native_value)
-        self.async_write_ha_state()
+        await self.update_value(native_value)
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
         val = min(10, max(1, int(value)))
-        self._attr_native_value = val
-        await self.coordinator.on_expiration_time_changed(val)
+        await self.update_value(val)
+
+
+    async def update_value(self, value: int):
+        """Set value to HA and coordinator"""
+        self._attr_native_value = value
+        await self.coordinator.on_expiration_time_changed(value)
+        self.async_write_ha_state()
 

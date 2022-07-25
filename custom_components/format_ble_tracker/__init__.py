@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 from curses import has_key
 import json
+import time
 import logging
 from typing import Any
 
@@ -23,6 +24,7 @@ from .const import (
     ROOM,
     ROOT_TOPIC,
     RSSI,
+    TIMESTAMP,
 )
 
 PLATFORMS: list[Platform] = [
@@ -38,6 +40,7 @@ MQTT_PAYLOAD = vol.Schema(
         vol.Schema(
             {
                 vol.Required(RSSI): vol.Coerce(int),
+                vol.Optional(TIMESTAMP): vol.Coerce(int)
             },
             extra=vol.ALLOW_EXTRA,
         ),
@@ -95,7 +98,6 @@ class BeaconCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Update data via library."""
-        _LOGGER.error("Room data: %s", str(self.room_data))
         if len(self.room_data) == 0:
             self.room = None
         else:
@@ -123,6 +125,13 @@ class BeaconCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except vol.MultipleInvalid as error:
             _LOGGER.debug("Skipping update because of malformatted data: %s", error)
             return
+        msg_time = data.get(TIMESTAMP)
+        if (msg_time is not None):
+            current_time = int(time.time())
+            if (current_time - msg_time >= self.get_expiration_time()):
+                _LOGGER.info("Received message with old timestamp, skipping")
+                return
+
         room_topic = msg.topic.split("/")[2]
 
         await self.schedule_data_expiration(room_topic)
@@ -135,10 +144,14 @@ class BeaconCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self.room_expiration_timers[room].cancel()
         loop = asyncio.get_event_loop()
         timer = loop.call_later(
-            (self.expiration_time if self.expiration_time else self.default_expiration_time) * 60,
+            self.get_expiration_time(),
             lambda: asyncio.ensure_future(self.expire_data(room)),
         )
         self.room_expiration_timers[room] = timer
+
+    def get_expiration_time(self):
+        """Calculate current expiration delay"""
+        return getattr(self, "expiration_time", self.default_expiration_time) * 60
 
     async def expire_data(self, room):
         """Set data for certain room expired"""

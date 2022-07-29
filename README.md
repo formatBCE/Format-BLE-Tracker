@@ -37,4 +37,7 @@ Integration will create device with three entities:
 3. Input slider for tuning data expiration period (from 1 minute to 10 minutes). This will affect the time from last visibility event till setting up Away mode. Use greater values, if you experience often changes Home to Away and back. By default set to 2 minutes.
 
 Additionally, for each tracker node (ESP32 device) there will be device with current IP sensor created. It can be useful to determine availability of node. Also, you can visit device config web page right from Home Assistant device page.
+
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/formatbce)
   

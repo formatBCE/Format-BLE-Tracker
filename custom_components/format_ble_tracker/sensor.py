@@ -40,7 +40,7 @@ class BleCurrentRoomSensor(BeaconDeviceEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        """Return the state attributes of the humidifier."""
+        """Return the state attributes of the sensor."""
         if len(self.coordinator.room_data) == 0:
             return None
         attr = {}

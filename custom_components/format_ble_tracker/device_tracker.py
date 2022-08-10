@@ -3,12 +3,17 @@ from homeassistant.components import device_tracker
 from homeassistant.components.device_tracker.config_entry import BaseTrackerEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import STATE_HOME, STATE_NOT_HOME
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant, Event, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.event import async_track_state_change_event
 
 from .common import BeaconDeviceEntity
 from .__init__ import BeaconCoordinator
-from .const import DOMAIN
+from .const import DOMAIN, NAME, MERGE_IDS, ENTITY_ID, NEW_STATE, MERGE_LOGIC, HOME_WHEN_AND, HOME_WHEN_OR
+
+import logging
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -16,8 +21,11 @@ async def async_setup_entry(
 ) -> None:
     """Add device tracker entities from a config_entry."""
 
-    coordinator: BeaconCoordinator = hass.data[DOMAIN][entry.entry_id]
-    async_add_entities([BleDeviceTracker(coordinator)], True)
+    if entry.entry_id in hass.data[DOMAIN]:
+        coordinator = hass.data[DOMAIN][entry.entry_id]
+        async_add_entities([BleDeviceTracker(coordinator)], True)
+    elif MERGE_IDS in entry.data:
+        async_add_entities([MergedDeviceTracker(entry.entry_id, entry.data[NAME], entry.data[MERGE_LOGIC], entry.data[MERGE_IDS])], True)
 
 
 class BleDeviceTracker(BeaconDeviceEntity, BaseTrackerEntity):
@@ -49,7 +57,84 @@ class BleDeviceTracker(BeaconDeviceEntity, BaseTrackerEntity):
         """Handle data update."""
         self.async_write_ha_state()
 
+class MergedDeviceTracker(BaseTrackerEntity):
+    """Define an device tracker entity."""
+
+    _attr_should_poll = False
+
+    def __init__(self, entry_id, name, merge_logic, merge_ids) -> None:
+        """Initialize."""
+        super().__init__()
+        self._attr_name = name
+        self._attr_unique_id = entry_id
+        self.entity_id = f"{device_tracker.DOMAIN}.combined_{self._attr_unique_id}"
+        self.logic = merge_logic
+        self.ids = merge_ids
+        self.states = {key: None for key in merge_ids}
+        self.merged_state = None
+
+    @property
+    def source_type(self) -> str:
+        """Return the source type, eg gps or router, of the device."""
+        return "bluetooth_le"
+
+    @property
+    def state(self) -> str:
+        """Return the state of the device."""
+        return self.merged_state
+
     async def async_added_to_hass(self) -> None:
-        """Subscribe to MQTT events."""
-        # await self.coordinator.async_on_entity_added_to_ha()
-        return await super().async_added_to_hass()
+        """Register callbacks."""
+
+        for ent_id in self.ids:
+            state_obj = self.hass.states.get(ent_id)
+            if state_obj is None:
+                state = None
+            else:
+                state = state_obj.state
+            self.on_state_changed(ent_id, state)
+
+        @callback
+        def _async_state_changed_listener(event: Event) -> None:
+            """Handle updates."""
+            if ENTITY_ID in event.data and NEW_STATE in event.data:
+                self.on_state_changed(event.data[ENTITY_ID], event.data[NEW_STATE].state)
+                self.async_write_ha_state()
+
+        self.async_on_remove(
+            async_track_state_change_event(
+                self.hass, self.ids, _async_state_changed_listener
+            )
+        )
+
+    def on_state_changed(self, entity_id, new_state):
+        """Calculate new state"""
+        self.states[entity_id] = new_state
+        states = self.states.values()
+        if None in states:
+            self.merged_state = None
+        else:
+            if self.logic == HOME_WHEN_AND:
+                if STATE_NOT_HOME in states:
+                    self.merged_state = STATE_NOT_HOME
+                else:
+                    self.merged_state = STATE_HOME
+            elif self.logic == HOME_WHEN_OR:
+                if STATE_HOME in states:
+                    self.merged_state = STATE_HOME
+                else:
+                    self.merged_state = STATE_NOT_HOME
+
+    @property
+    def extra_state_attributes(self):
+        """Return the state attributes of the sensor."""
+        if len(self.ids) == 0:
+            return None
+        attr = {}
+        attr["included_trackers"] = self.ids
+        if self.logic == HOME_WHEN_AND:
+            logic = "All are home"
+        else:
+            logic = "Any is home"
+        attr["show_home_when"] = logic
+        return attr

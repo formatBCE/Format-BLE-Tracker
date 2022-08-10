@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import asyncio
-from curses import has_key
+from asyncio import events
 import json
 import time
 import logging
@@ -25,6 +25,7 @@ from .const import (
     ROOT_TOPIC,
     RSSI,
     TIMESTAMP,
+    MERGE_IDS,
 )
 
 PLATFORMS: list[Platform] = [
@@ -53,30 +54,39 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})
 
-    coordinator = BeaconCoordinator(hass, entry.data)
+    if MAC in entry.data:
+        mac = entry.data[MAC]
+        coordinator = BeaconCoordinator(hass, entry.data)
+        state_topic = ROOT_TOPIC + "/" + mac + "/+"
+        _LOGGER.info("Subscribing to %s", state_topic)
+        await mqtt.async_subscribe(hass, state_topic, coordinator.message_received, 1)
+        alive_topic = ALIVE_NODES_TOPIC + "/" + mac
+        _LOGGER.info("Notifying alive to %s", alive_topic)
+        await mqtt.async_publish(hass, alive_topic, True, 1, retain=True)
+        hass.data[DOMAIN][entry.entry_id] = coordinator
+        hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+    elif MERGE_IDS in entry.data:
+        hass.config_entries.async_setup_platforms(entry, [Platform.DEVICE_TRACKER])
 
-    mac = entry.data[MAC]
-    state_topic = ROOT_TOPIC + "/" + mac + "/+"
-    _LOGGER.info("Subscribing to %s", state_topic)
-    await mqtt.async_subscribe(hass, state_topic, coordinator.message_received, 1)
-    alive_topic = ALIVE_NODES_TOPIC + "/" + mac
-    _LOGGER.info("Notifying alive to %s", alive_topic)
-    await mqtt.async_publish(hass, alive_topic, True, 1, retain=True)
-
-    hass.data[DOMAIN][entry.entry_id] = coordinator
-    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+
+    if entry.entry_id in hass.data[DOMAIN]:
+        platforms = PLATFORMS
+    else:
+        platforms = [Platform.DEVICE_TRACKER]
+
+    if unload_ok := await hass.config_entries.async_unload_platforms(entry, platforms) and entry.entry_id in hass.data[DOMAIN]:
         hass.data[DOMAIN].pop(entry.entry_id)
 
+    if MAC in entry.data:
         mac = entry.data[MAC]
         alive_topic = ALIVE_NODES_TOPIC + "/" + mac
-        _LOGGER.info("Notifying alive to %s", alive_topic)
+        _LOGGER.info("Notifying dead to %s", alive_topic)
         await mqtt.async_publish(hass, alive_topic, "", 1, retain=True)
 
     return unload_ok

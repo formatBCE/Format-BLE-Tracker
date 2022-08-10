@@ -44,4 +44,7 @@ Integration will create device with three entities for beacon:
 For combined tracker, new Device Tracker entity will be created.
 
 Additionally, for each tracker node (ESP32 device) there will be device with current IP sensor created. It can be useful to determine availability of node. Also, you can visit device config web page right from Home Assistant device page.
+
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/formatbce)
   

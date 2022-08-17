@@ -24,15 +24,19 @@ Requires ESP32 tracking nodes installation: see https://github.com/formatBCE/ESP
   Copy the format_ble_tracker folder and all of its contents into your Home Assistant's custom_components folder. This is often located inside of your /config folder. If you are running Hass.io, use SAMBA to copy the folder over. If you are running Home Assistant Supervised, the custom_components folder might be located at /usr/share/hassio/homeassistant. It is possible that your custom_components folder does not exist. If that is the case, create the folder in the proper location, and then copy the format_ble_tracker folder and all of its contents inside the newly created custom_components folder. 
   After it's done, restart HomeAssistant and reload browser page forcefully (Ctrl+F5).
   
-# Usage:
+# Configuration:
 
 In Home Assistant, go to "Devices and Services" -> "Add Integration". Search for "Format BLE Tracker" and click on it.
 ## Adding new beacon device
 In the configuration dialog, insert MAC address or UUID of tag, and (optionally) enter friendly name for this device.
 ## Creating combined tracker
-(Will be useful, if you need to customize behavior of device trackers working together. E.g. i have tags on my key chain and in my wallet - and i want Home Assistant to show myself away, if either of this device trackers is not_home.
-Currently it's impossible without relying on custom sensors (which are NOT device_tracker) or MQTT device_tracker with help of NodeRED or automation. Combined tracker will use your logic to show itself home/not_home accordingly.)
+Will be useful, if you need to customize behavior of device trackers working together. 
+E.g. i have tags on my key chain and in my wallet - and i want Home Assistant to show myself away, if either of this device trackers is not_home.
+Currently it's impossible without relying on custom sensors (which are NOT device_tracker) or MQTT device_tracker with help of NodeRED or automation. Combined tracker will use your logic to show itself home/not_home accordingly.
+
 Choose name for new virtual tracker, logic (all home or either home) and pick trackers, that will be combined in new entity.
+
+# Usage:
 
 All communication between tracker nodes and created device are automatic.
 
@@ -43,7 +47,7 @@ Integration will create device with three entities for beacon:
 
 For combined tracker, new Device Tracker entity will be created.
 
-Additionally, for each tracker node (ESP32 device) there will be device with current IP sensor created. It can be useful to determine availability of node. Also, you can visit device config web page right from Home Assistant device page.
+Additionally, if you use custom firmware for ESP32 (NOT ESPHome), for each tracker node (ESP32 device) there will be device with current IP sensor created. It can be useful to determine availability of node. Also, you can visit device config web page right from Home Assistant device page.
 
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/formatbce)

@@ -1,12 +1,12 @@
-"""Room sensor implementation"""
+"""Room sensor implementation."""
 from homeassistant.components import sensor
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .common import BeaconDeviceEntity
 from .__init__ import BeaconCoordinator
+from .common import BeaconDeviceEntity
 from .const import DOMAIN
 
 
@@ -45,6 +45,6 @@ class BleCurrentRoomSensor(BeaconDeviceEntity, SensorEntity):
             return None
         attr = {}
         attr["current_rooms"] = {}
-        for key, value in self.coordinator.room_data.items():
+        for key, value in self.coordinator.filtered_room_data.items():
             attr["current_rooms"][key] = f"{value} dBm"
         return attr

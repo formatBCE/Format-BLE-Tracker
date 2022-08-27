@@ -1,17 +1,26 @@
-"""Device tracker implementation"""
+"""Device tracker implementation."""
+import logging
+
 from homeassistant.components import device_tracker
 from homeassistant.components.device_tracker.config_entry import BaseTrackerEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import STATE_HOME, STATE_NOT_HOME
-from homeassistant.core import HomeAssistant, Event, callback
+from homeassistant.const import STATE_HOME, STATE_NOT_HOME, STATE_UNKNOWN
+from homeassistant.core import Event, HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change_event
 
-from .common import BeaconDeviceEntity
 from .__init__ import BeaconCoordinator
-from .const import DOMAIN, NAME, MERGE_IDS, ENTITY_ID, NEW_STATE, MERGE_LOGIC, HOME_WHEN_AND, HOME_WHEN_OR
-
-import logging
+from .common import BeaconDeviceEntity
+from .const import (
+    DOMAIN,
+    ENTITY_ID,
+    AWAY_WHEN_OR,
+    AWAY_WHEN_AND,
+    MERGE_IDS,
+    MERGE_LOGIC,
+    NAME,
+    NEW_STATE,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,7 +34,17 @@ async def async_setup_entry(
         coordinator = hass.data[DOMAIN][entry.entry_id]
         async_add_entities([BleDeviceTracker(coordinator)], True)
     elif MERGE_IDS in entry.data:
-        async_add_entities([MergedDeviceTracker(entry.entry_id, entry.data[NAME], entry.data[MERGE_LOGIC], entry.data[MERGE_IDS])], True)
+        async_add_entities(
+            [
+                MergedDeviceTracker(
+                    entry.entry_id,
+                    entry.data[NAME],
+                    entry.data[MERGE_LOGIC],
+                    entry.data[MERGE_IDS],
+                )
+            ],
+            True,
+        )
 
 
 class BleDeviceTracker(BeaconDeviceEntity, BaseTrackerEntity):
@@ -57,6 +76,7 @@ class BleDeviceTracker(BeaconDeviceEntity, BaseTrackerEntity):
         """Handle data update."""
         self.async_write_ha_state()
 
+
 class MergedDeviceTracker(BaseTrackerEntity):
     """Define an device tracker entity."""
 
@@ -71,7 +91,7 @@ class MergedDeviceTracker(BaseTrackerEntity):
         self.logic = merge_logic
         self.ids = merge_ids
         self.states = {key: None for key in merge_ids}
-        self.merged_state = None
+        self.merged_state = STATE_UNKNOWN
 
     @property
     def source_type(self) -> str:
@@ -98,8 +118,9 @@ class MergedDeviceTracker(BaseTrackerEntity):
         def _async_state_changed_listener(event: Event) -> None:
             """Handle updates."""
             if ENTITY_ID in event.data and NEW_STATE in event.data:
-                self.on_state_changed(event.data[ENTITY_ID], event.data[NEW_STATE].state)
-                self.async_write_ha_state()
+                self.on_state_changed(
+                    event.data[ENTITY_ID], event.data[NEW_STATE].state
+                )
 
         self.async_on_remove(
             async_track_state_change_event(
@@ -108,22 +129,24 @@ class MergedDeviceTracker(BaseTrackerEntity):
         )
 
     def on_state_changed(self, entity_id, new_state):
-        """Calculate new state"""
+        """Calculate new state."""
         self.states[entity_id] = new_state
         states = self.states.values()
-        if None in states:
-            self.merged_state = None
+        if STATE_HOME not in states and STATE_NOT_HOME not in states:
+            self.merged_state = STATE_UNKNOWN
         else:
-            if self.logic == HOME_WHEN_AND:
+            if self.logic == AWAY_WHEN_OR:
                 if STATE_NOT_HOME in states:
                     self.merged_state = STATE_NOT_HOME
                 else:
                     self.merged_state = STATE_HOME
-            elif self.logic == HOME_WHEN_OR:
+            elif self.logic == AWAY_WHEN_AND:
                 if STATE_HOME in states:
                     self.merged_state = STATE_HOME
                 else:
                     self.merged_state = STATE_NOT_HOME
+        self.async_write_ha_state()
+
 
     @property
     def extra_state_attributes(self):
@@ -132,9 +155,11 @@ class MergedDeviceTracker(BaseTrackerEntity):
             return None
         attr = {}
         attr["included_trackers"] = self.ids
-        if self.logic == HOME_WHEN_AND:
-            logic = "All are home"
+        if self.logic == AWAY_WHEN_OR:
+            logic = "Home when all are home"
+        elif self.logic == AWAY_WHEN_AND:
+            logic = "Home when any is home"
         else:
-            logic = "Any is home"
+            logic = None
         attr["show_home_when"] = logic
         return attr

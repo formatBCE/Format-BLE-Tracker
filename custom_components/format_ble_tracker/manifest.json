@@ -1,7 +1,7 @@
 {
   "domain": "format_ble_tracker",
   "name": "Format BLE Tracker",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "config_flow": true,
   "documentation": "https://github.com/formatBCE/Format-BLE-Tracker/blob/main/README.md",
   "issue_tracker": "https://github.com/formatBCE/Format-BLE-Tracker/issues",

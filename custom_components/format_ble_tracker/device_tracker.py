@@ -121,6 +121,7 @@ class MergedDeviceTracker(BaseTrackerEntity):
                 self.on_state_changed(
                     event.data[ENTITY_ID], event.data[NEW_STATE].state
                 )
+                self.async_write_ha_state()
 
         self.async_on_remove(
             async_track_state_change_event(
@@ -132,7 +133,7 @@ class MergedDeviceTracker(BaseTrackerEntity):
         """Calculate new state."""
         self.states[entity_id] = new_state
         states = self.states.values()
-        if STATE_HOME not in states and STATE_NOT_HOME not in states:
+        if None in states:
             self.merged_state = STATE_UNKNOWN
         else:
             if self.logic == AWAY_WHEN_OR:
@@ -145,8 +146,6 @@ class MergedDeviceTracker(BaseTrackerEntity):
                     self.merged_state = STATE_HOME
                 else:
                     self.merged_state = STATE_NOT_HOME
-        self.async_write_ha_state()
-
 
     @property
     def extra_state_attributes(self):

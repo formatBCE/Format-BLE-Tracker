@@ -11,9 +11,9 @@ from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 
 from .const import (
-    DOMAIN,
-    AWAY_WHEN_OR,
     AWAY_WHEN_AND,
+    AWAY_WHEN_OR,
+    DOMAIN,
     MAC,
     MAC_REGEX,
     MERGE_IDS,
@@ -47,7 +47,7 @@ CHOOSE_DATA_SCHEMA = vol.Schema(
 
 CONF_MERGE_LOGIC = {
     AWAY_WHEN_OR: "Show as away, when ANY tracker is away",
-    AWAY_WHEN_AND: "Show as away, when ALL trackers are away"
+    AWAY_WHEN_AND: "Show as away, when ALL trackers are away",
 }
 
 MERGE_SCHEMA = vol.Schema(

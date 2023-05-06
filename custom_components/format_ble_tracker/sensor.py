@@ -47,4 +47,8 @@ class BleCurrentRoomSensor(BeaconDeviceEntity, SensorEntity):
         attr["current_rooms"] = {}
         for key, value in self.coordinator.filtered_room_data.items():
             attr["current_rooms"][key] = f"{value} dBm"
+        attr["current_rooms_raw"] = {}
+        for key, value in self.coordinator.room_data.items():
+            attr["current_rooms_raw"][key] = f"{value} dBm"
+        attr["last_adv"] = self.coordinator.time_from_previous
         return attr

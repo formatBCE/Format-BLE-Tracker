@@ -12,10 +12,10 @@ from homeassistant.helpers.event import async_track_state_change_event
 from .__init__ import BeaconCoordinator
 from .common import BeaconDeviceEntity
 from .const import (
+    AWAY_WHEN_AND,
+    AWAY_WHEN_OR,
     DOMAIN,
     ENTITY_ID,
-    AWAY_WHEN_OR,
-    AWAY_WHEN_AND,
     MERGE_IDS,
     MERGE_LOGIC,
     NAME,

@@ -17,7 +17,7 @@ Requires ESP32 tracking nodes installation: see https://github.com/formatBCE/ESP
 # Installation:
 
   1. HACS: 
-  [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=formatBCE&repository=ESP32_BLE_presense&category=Integration)
+  [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=formatBCE&repository=Format-BLE-Tracker&category=Integration)
    - Add this repository to HACS in Integrations -> (menu) -> Custom repositories (Repository: URL of this repository, Category: Integration)
    - Install integration from Integration page.
   

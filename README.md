@@ -3,7 +3,7 @@
 # Format-BLE-Tracker
 
 Custom integration for tracking BLE devices (bluetooth tags, smartwatches, phones with Home Assistant Companion app) in Home Assistant
-Requires ESP32 tracking nodes installation: see https://github.com/formatBCE/ESP32_BLE_presense.
+Requires ESPHome and ESP32 tracking nodes installation: see https://github.com/formatBCE/ESP32_BLE_presense.
 
 # Prerequisites:
 
@@ -18,8 +18,7 @@ Requires ESP32 tracking nodes installation: see https://github.com/formatBCE/ESP
 
   1. HACS: 
   [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=formatBCE&repository=Format-BLE-Tracker&category=Integration)
-   - Add this repository to HACS in Integrations -> (menu) -> Custom repositories (Repository: URL of this repository, Category: Integration)
-   - Install integration from Integration page.
+  Add this repository to HACS in Integrations -> (menu) -> Custom repositories (Repository: URL of this repository, Category: Integration)
   
   2. Manual: 
   Copy the format_ble_tracker folder and all of its contents into your Home Assistant's custom_components folder. This is often located inside of your /config folder. If you are running Hass.io, use SAMBA to copy the folder over. If you are running Home Assistant Supervised, the custom_components folder might be located at /usr/share/hassio/homeassistant. It is possible that your custom_components folder does not exist. If that is the case, create the folder in the proper location, and then copy the format_ble_tracker folder and all of its contents inside the newly created custom_components folder. 
@@ -47,9 +46,6 @@ Integration will create device with three entities for beacon:
 3. Input slider for tuning data expiration period (from 1 minute to 10 minutes). This will affect the time from last visibility event till setting up Away mode. Use greater values, if you experience often changes Home to Away and back. By default set to 2 minutes.
 
 For combined tracker, new Device Tracker entity will be created.
-
-Additionally, if you use custom firmware for ESP32 (NOT ESPHome), for each tracker node (ESP32 device) there will be device with current IP sensor created. It can be useful to determine availability of node. Also, you can visit device config web page right from Home Assistant device page.
-
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/formatbce)
   

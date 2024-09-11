@@ -1,5 +1,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 
+# _DEPRECATED_ Use [Bermuda Trilateration](https://github.com/agittins/bermuda) instead
+
 # Format-BLE-Tracker
 
 Custom integration for tracking BLE devices (bluetooth tags, smartwatches, phones with Home Assistant Companion app) in Home Assistant
